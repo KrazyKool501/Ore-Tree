@@ -1,28 +1,76 @@
-addLayer("p", {
-    name: "prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+addLayer("c", {
+    name: "coal", 
+    symbol: "C", 
+    position: 0,
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
     }},
-    color: "#4BDC13",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
-    resource: "prestige points", // Name of prestige currency
-    baseResource: "points", // Name of resource prestige is based on
-    baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
-    gainMult() { // Calculate the multiplier for main currency from bonuses
+    color: "#333333",
+    requires: new Decimal(10),
+    resource: "Coal",
+    baseResource: "money",
+    baseAmount() {return player.points},
+    type: "normal", 
+    exponent: 0.5, 
+    gainMult() { 
         mult = new Decimal(1)
         return mult
     },
-    gainExp() { // Calculate the exponent on main currency from bonuses
+    gainExp() { 
         return new Decimal(1)
     },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "p", description: "P: Reset for prestige points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
+    upgrades: {
+        rows: 4,
+        cols: 4,
+        11: {
+            title: "Doubler",
+            description: "Double your money gain.",
+            cost: new Decimal(1),
+        },
+        12: {
+            title: "Tripler",
+            description: "Triple your money gain.",
+            cost: new Decimal(2),
+            unlocked(){
+                return hasUpgrade("c", 11)
+            }
+        },
+        13: {
+            title: "Coal Surge",
+            description: "Coal boosts Money.",
+            cost: new Decimal(4),
+            effect() {
+                let eff = player.c.points.plus(1).pow(0.2)
+                return eff
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+            unlocked(){
+                return hasUpgrade("c", 12)
+            }
+        },
+        14: {
+            title: "Exponential Money",
+            description: "Money boosts itself.",
+            cost: new Decimal(8),
+            effect() {
+                let eff = player.points.plus(1).pow(0.2)
+                return eff
+            },
+            effectDisplay() { return format(upgradeEffect(this.layer, this.id))+"x" },
+            unlocked(){
+                return hasUpgrade("c", 13)
+            }
+        }, 
+        21: {
+            title: "A New Row",
+            description: "Increase your base money gain by 1.",
+            cost: new Decimal(20),
+            unlocked(){
+                return hasUpgrade("c", 14)
+            }
+        },   
+    },
+    row: 0,
     layerShown(){return true}
 })
